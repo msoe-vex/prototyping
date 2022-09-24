@@ -80,7 +80,7 @@ void opcontrol() {
 	pros::Motor motorOne(1);
 	pros::Motor motorTwo(2);
 	pros::Motor motorThree(3);
-	pros::Motor motorOneReversed(4, true));
+	pros::Motor motorOneReversed(4, true);
 	pros::Motor motorTwoReversed(5, true);
 	pros::Motor motorThreeReversed(6, true);
 	pros::Motor_Group motorGroup ({motorOne, motorTwo, motorThree, motorOneReversed, motorTwoReversed, motorThreeReversed});
