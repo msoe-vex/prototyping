@@ -1,4 +1,6 @@
 #include "main.h"
+#include "pros/misc.h"
+#include "pros/motors.hpp"
 
 /**
  * A callback function for LLEMU's center button.
@@ -75,11 +77,25 @@ void autonomous() {}
  */
 void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor left_mtr(1);
-	pros::Motor right_mtr(2);
+	pros::Motor motorOne(1);
+	pros::Motor motorTwo(2);
+	pros::Motor motorThree(3);
+	pros::Motor motorOneReversed(4, true));
+	pros::Motor motorTwoReversed(5, true);
+	pros::Motor motorThreeReversed(6, true);
+	pros::Motor_Group motorGroup ({motorOne, motorTwo, motorThree, motorOneReversed, motorTwoReversed, motorThreeReversed});
+
+	bool analogUsage = true; //Determines joystick or button toggle controls
 
 	while (true) {
-		
+		if (analogUsage) //If analogUsage is true, use joystick controls
+		{ 
+		motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
+		}
+		else
+		{
+
+		}
 	}
 }
 
