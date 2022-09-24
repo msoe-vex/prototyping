@@ -1,5 +1,7 @@
 #include "main.h"
 #include "pros/misc.h"
+#include "pros/motors.hpp"
+#include "pros/rtos.hpp"
 
 /**
  * A callback function for LLEMU's center button.
@@ -7,14 +9,16 @@
  * When this callback is fired, it will toggle line 2 of the LCD text between
  * "I was pressed!" and nothing.
  */
+using pros::E_CONTROLLER_DIGITAL_R1;
+
 void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
+  static bool pressed = false;
+  pressed = !pressed;
+  if (pressed) {
+    pros::lcd::set_text(2, "I was pressed!");
+  } else {
+    pros::lcd::clear_line(2);
+  }
 }
 
 /**
@@ -76,37 +80,60 @@ void autonomous() {}
  */
 void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor firstMtr(1);
-	pros::Motor secondMtr(2);
-	pros::Motor thirdMtr(3);
-	pros::Motor_Group motorGroup ({firstMtr, secondMtr, thirdMtr});
+
+
+	pros::Motor motorOne(1);
+	pros::Motor motorTwo(2);
+	pros::Motor motorThree(3);
+	pros::Motor motorOneReversed(4, true);
+	pros::Motor motorTwoReversed(5, true);
+	pros::Motor motorThreeReversed(6, true);
+	pros::Motor miscMotor(7);
+	pros::Motor_Group motorGroup ({motorOne, motorTwo, motorThree, motorOneReversed, motorTwoReversed, motorThreeReversed});
+
+	bool analogUsage = true; //Determines joystick or button toggle controls
+
 	bool toggle = false;
 	int val = 0;
 
 	while (true) {
-		
-		if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
-			toggle = !toggle;
-		}
-		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-			if (val == -127) {
-				val = -126;
-			}
-			val -= 1;
-		} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
-			if (val == 127) {
-				val = 126;
-			}
-			val += 1;
-		}
-		if (toggle) {
-			motorGroup.move(val);
+    	if (master.get_digital_new_press(E_CONTROLLER_DIGITAL_R1)) {
+    	    analogUsage = !analogUsage;
+    	  }
+
+        if (analogUsage) //If analogUsage is true, use joystick controls
+		{ 
+		motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
 		} else {
-			motorGroup.move(0);
+			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+				toggle = !toggle;
+			}
+			if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+				if (val == -127) {
+					val = -126;
+				}
+				val -= 1;
+			} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+				if (val == 127) {
+					val = 126;
+				}
+				val += 1;
+			}
+			if (toggle) {
+				motorGroup.move(val);
+			} else {
+				motorGroup.move(0);
+			}
 		}
+		
+
+		
 
 		pros::delay(20);
 	}
+
+			
+		
 }
 
 // 2 3-motor-group controlled by toggle (same ports)
