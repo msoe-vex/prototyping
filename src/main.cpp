@@ -1,4 +1,5 @@
 #include "main.h"
+#include "pros/misc.h"
 
 /**
  * A callback function for LLEMU's center button.
@@ -75,11 +76,36 @@ void autonomous() {}
  */
 void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor left_mtr(1);
-	pros::Motor right_mtr(2);
+	pros::Motor firstMtr(1);
+	pros::Motor secondMtr(2);
+	pros::Motor thirdMtr(3);
+	pros::Motor_Group motorGroup ({firstMtr, secondMtr, thirdMtr});
+	bool toggle = false;
+	int val = 0;
 
 	while (true) {
 		
+		if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+			toggle = !toggle;
+		}
+		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+			if (val == -127) {
+				val = -126;
+			}
+			val -= 1;
+		} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+			if (val == 127) {
+				val = 126;
+			}
+			val += 1;
+		}
+		if (toggle) {
+			motorGroup.move(val);
+		} else {
+			motorGroup.move(0);
+		}
+
+		pros::delay(20);
 	}
 }
 
