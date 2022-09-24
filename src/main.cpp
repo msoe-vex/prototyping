@@ -1,6 +1,7 @@
 #include "main.h"
 #include "pros/misc.h"
 #include "pros/motors.hpp"
+#include "pros/rtos.hpp"
 
 /**
  * A callback function for LLEMU's center button.
@@ -8,14 +9,16 @@
  * When this callback is fired, it will toggle line 2 of the LCD text between
  * "I was pressed!" and nothing.
  */
+using pros::E_CONTROLLER_DIGITAL_R1;
+
 void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
+  static bool pressed = false;
+  pressed = !pressed;
+  if (pressed) {
+    pros::lcd::set_text(2, "I was pressed!");
+  } else {
+    pros::lcd::clear_line(2);
+  }
 }
 
 /**
@@ -83,15 +86,21 @@ void opcontrol() {
 	pros::Motor motorOneReversed(4, true);
 	pros::Motor motorTwoReversed(5, true);
 	pros::Motor motorThreeReversed(6, true);
+	pros::Motor miscMotor(7);
 	pros::Motor_Group motorGroup ({motorOne, motorTwo, motorThree, motorOneReversed, motorTwoReversed, motorThreeReversed});
 
 	bool analogUsage = true; //Determines joystick or button toggle controls
 
 	while (true) {
-		if (analogUsage) //If analogUsage is true, use joystick controls
+    	if (master.get_digital_new_press(E_CONTROLLER_DIGITAL_R1)) {
+    	    analogUsage = !analogUsage;
+    	  }
+
+        if (analogUsage) //If analogUsage is true, use joystick controls
 		{ 
 		motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
 		}
+		pros::delay(20);
 	}
 }
 
