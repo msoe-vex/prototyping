@@ -3,6 +3,7 @@
 #include "pros/motors.hpp"
 #include "pros/rtos.hpp"
 #include <cmath>
+#include "pros/screen.hpp"
 
 /**
  * A callback function for LLEMU's center button.
@@ -106,6 +107,12 @@ void opcontrol() {
 	int val1 = 60;
 	int val2 = 60;
 
+	enum VelocityState {
+        ONE, TWO, THREE, ZERO, N_ONE, N_TWO, N_THREE, NONE
+    };
+
+	VelocityState m_state = NONE;
+
 	while (true) {
 		//Bad things happening
 		//master.print(0,0, "L: %d R: %d     ", round(motorGroup.get_actual_velocities()[0]), round(miscMotorGroup.get_actual_velocities()[0]));
@@ -118,14 +125,142 @@ void opcontrol() {
         if (analogUsage1) { //If analogUsage1 is true, use joystick controls
 			motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
 		} else {
-			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+				switch (m_state) {
+					case ONE: {
+						m_state = TWO;
+					}	
+					case TWO: {
+						m_state = THREE;
+					}	
+					case THREE: {
+						m_state = THREE;
+					}	
+					case ZERO: {
+						m_state = ONE;
+					}
+					case N_ONE: {
+						m_state = ZERO;
+					}	
+					case N_TWO: {
+						m_state = N_ONE;
+					}	
+					case N_THREE: {
+						m_state = N_TWO;
+					}
+					case NONE: {
+						m_state = ZERO;
+					} 
+					default: {
+						m_state = ZERO;
+					}
+				}
+			}
+			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+				switch (m_state) {
+					case ONE: {
+						m_state = ZERO;
+					}	
+					case TWO: {
+						m_state = ONE;
+					}	
+					case THREE: {
+						m_state = TWO;
+					}	
+					case ZERO: {
+						m_state = N_ONE;
+					}
+					case N_ONE: {
+						m_state = N_TWO;
+					}	
+					case N_TWO: {
+						m_state = N_THREE;
+					}	
+					case N_THREE: {
+						m_state = N_THREE;
+					}
+					case NONE: {
+						m_state = ZERO;
+					} 
+					default: {
+						m_state = ZERO;
+					}
+				}
+			}
+			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {	
 				toggle1 = !toggle1;
 			}
 
 			if (toggle1) {
-				motorGroup.move(val1);
+				switch (m_state) {
+					case ONE: {
+						motorGroup.move(50);
+					}	
+					case TWO: {
+						motorGroup.move(100);
+					}	
+					case THREE: {
+						motorGroup.move(127);
+					}	
+					case ZERO: {
+						motorGroup.move(0);
+					}
+					case N_ONE: {
+						motorGroup.move(-50);
+					}	
+					case N_TWO: {
+						motorGroup.move(-100);
+					}	
+					case N_THREE: {
+						motorGroup.move(-127);
+					}
+					case NONE: {
+						motorGroup.move(val1);
+					}
+				} 
 			} else {
 				motorGroup.move(0);
+			}
+			if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+				m_state = NONE;
+				if (val1 == -127) {
+					val1 = -126;
+				}
+				val1 -= 1;
+			} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+				m_state = NONE;
+				if (val1 == 127) {
+					val1 = 126;
+				}
+				val1 += 1;
+			}
+			if (toggle1) {
+				switch (m_state) {
+					case ONE: {
+						motorGroup.move(50);
+					}	
+					case TWO: {
+						motorGroup.move(100);
+					}	
+					case THREE: {
+						motorGroup.move(127);
+					}	
+					case ZERO: {
+						motorGroup.move(0);
+					}
+					case N_ONE: {
+						motorGroup.move(-50);
+					}	
+					case N_TWO: {
+						motorGroup.move(-100);
+					}	
+					case N_THREE: {
+						motorGroup.move(-127);
+					}
+					case NONE: {
+						motorGroup.move(val1);
+					}
+				} 
 			}
 		}
 
