@@ -80,10 +80,11 @@ void opcontrol() {
 	pros::Motor secondMtr(2);
 	pros::Motor thirdMtr(3);
 	pros::Motor_Group motorGroup ({firstMtr, secondMtr, thirdMtr});
+	int toggle = -1;
+	int val = 0;
 
 	while (true) {
-		int toggle = -1;
-		int val = 0;
+		
 		if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
 			toggle = toggle * -1;
 		}
@@ -98,7 +99,7 @@ void opcontrol() {
 			}
 			val += 1;
 		}
-		if (val == 1) {
+		if (toggle == 1) {
 			motorGroup.move(val);
 		}
 	}
