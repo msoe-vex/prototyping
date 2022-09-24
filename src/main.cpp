@@ -92,10 +92,6 @@ void opcontrol() {
 		{ 
 		motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
 		}
-		else
-		{
-
-		}
 	}
 }
 
