@@ -102,7 +102,7 @@ void opcontrol() {
 		if (toggle) {
 			motorGroup.move(val);
 		} else {
-			motorGroup.move(val);
+			motorGroup.move(0);
 		}
 
 		pros::delay(20);
