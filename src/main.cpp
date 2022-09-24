@@ -2,6 +2,7 @@
 #include "pros/misc.h"
 #include "pros/motors.hpp"
 #include "pros/rtos.hpp"
+#include <cmath>
 
 /**
  * A callback function for LLEMU's center button.
@@ -100,10 +101,16 @@ void opcontrol() {
 	bool analogUsage1 = true; //Determines joystick or button toggle controls
 	bool analogUsage2 = true; //Determines joystick or button toggle controls
 
-	bool toggle = false;
-	int val = 0;
+	bool toggle1 = false;
+	bool toggle2 = false;
+	int val1 = 60;
+	int val2 = 60;
 
 	while (true) {
+		//Bad things happening
+		//master.print(0,0, "L: %d R: %d     ", round(motorGroup.get_actual_velocities()[0]), round(miscMotorGroup.get_actual_velocities()[0]));
+		master.print(1,0,"L: %d R: %d     ", val1, val2);
+
     	if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
     	    analogUsage1 = !analogUsage1;
     	}
@@ -112,21 +119,11 @@ void opcontrol() {
 			motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
 		} else {
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
-				toggle = !toggle;
+				toggle1 = !toggle1;
 			}
-			if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-				if (val == -127) {
-					val = -126;
-				}
-				val -= 1;
-			} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
-				if (val == 127) {
-					val = 126;
-				}
-				val += 1;
-			}
-			if (toggle) {
-				motorGroup.move(val);
+
+			if (toggle1) {
+				motorGroup.move(val1);
 			} else {
 				motorGroup.move(0);
 			}
@@ -140,24 +137,36 @@ void opcontrol() {
 			miscMotorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
 		} else {
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
-				toggle = !toggle;
+				toggle2 = !toggle2;
 			}
-			if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-				if (val == -127) {
-					val = -126;
-				}
-				val -= 1;
-			} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
-				if (val == 127) {
-					val = 126;
-				}
-				val += 1;
-			}
-			if (toggle) {
-				miscMotorGroup.move(val);
+			if (toggle2) {
+				miscMotorGroup.move(val2);
 			} else {
 				miscMotorGroup.move(0);
 			}
+		}
+
+		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+			if (val2 == -127) {
+				val2 = -126;
+			}
+			val2 -= 1;
+		} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+			if (val2 == 127) {
+				val2 = 126;
+			}
+			val2 += 1;
+		}
+		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+			if (val1 == -127) {
+				val1 = -126;
+			}
+			val1 -= 1;
+		} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+			if (val1 == 127) {
+				val1 = 126;
+			}
+			val1 += 1;
 		}
 
 		// if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
