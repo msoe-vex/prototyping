@@ -1,4 +1,8 @@
 #include "main.h"
+#include "pros/misc.h"
+#include "pros/motors.hpp"
+#include "pros/rtos.hpp"
+#include <cmath>
 
 /**
  * A callback function for LLEMU's center button.
@@ -6,14 +10,16 @@
  * When this callback is fired, it will toggle line 2 of the LCD text between
  * "I was pressed!" and nothing.
  */
+using pros::E_CONTROLLER_DIGITAL_R1;
+
 void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
+  static bool pressed = false;
+  pressed = !pressed;
+  if (pressed) {
+    pros::lcd::set_text(2, "I was pressed!");
+  } else {
+    pros::lcd::clear_line(2);
+  }
 }
 
 /**
@@ -75,18 +81,111 @@ void autonomous() {}
  */
 void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor left_mtr(1);
-	pros::Motor right_mtr(2);
+
+
+	pros::Motor motorOne(1);
+	pros::Motor motorTwo(2);
+	pros::Motor motorThree(3);
+	pros::Motor motorOneReversed(4, true);
+	pros::Motor motorTwoReversed(5, true);
+	pros::Motor motorThreeReversed(6, true);
+	pros::Motor miscMotor1(11);
+	pros::Motor miscMotor2(12);
+	pros::Motor miscMotor3(13);
+	pros::Motor miscMotor1Reversed(14, true);
+	pros::Motor miscMotor2Reversed(15, true);
+	pros::Motor miscMotor3Reversed(16, true);
+	pros::Motor_Group motorGroup({motorOne, motorTwo, motorThree, motorOneReversed, motorTwoReversed, motorThreeReversed});
+	pros::Motor_Group miscMotorGroup({miscMotor1, miscMotor2, miscMotor3, miscMotor1Reversed, miscMotor2Reversed, miscMotor3Reversed});
+
+	bool analogUsage1 = true; //Determines joystick or button toggle controls
+	bool analogUsage2 = true; //Determines joystick or button toggle controls
+
+	bool toggle1 = false;
+	bool toggle2 = false;
+	int val1 = 60;
+	int val2 = 60;
 
 	while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
-		int left = master.get_analog(ANALOG_LEFT_Y);
-		int right = master.get_analog(ANALOG_RIGHT_Y);
+		//Bad things happening
+		//master.print(0,0, "L: %d R: %d     ", round(motorGroup.get_actual_velocities()[0]), round(miscMotorGroup.get_actual_velocities()[0]));
+		master.print(1,0,"L: %d R: %d     ", val1, val2);
 
-		left_mtr = left;
-		right_mtr = right;
+    	if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+    	    analogUsage1 = !analogUsage1;
+    	}
+
+        if (analogUsage1) { //If analogUsage1 is true, use joystick controls
+			motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
+		} else {
+			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+				toggle1 = !toggle1;
+			}
+
+			if (toggle1) {
+				motorGroup.move(val1);
+			} else {
+				motorGroup.move(0);
+			}
+		}
+
+		if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+    	    analogUsage2 = !analogUsage2;
+    	}
+
+        if (analogUsage2) { //If analogUsage1 is true, use joystick controls
+			miscMotorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
+		} else {
+			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+				toggle2 = !toggle2;
+			}
+			if (toggle2) {
+				miscMotorGroup.move(val2);
+			} else {
+				miscMotorGroup.move(0);
+			}
+		}
+
+		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+			if (val2 == -127) {
+				val2 = -126;
+			}
+			val2 -= 1;
+		} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+			if (val2 == 127) {
+				val2 = 126;
+			}
+			val2 += 1;
+		}
+		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+			if (val1 == -127) {
+				val1 = -126;
+			}
+			val1 -= 1;
+		} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+			if (val1 == 127) {
+				val1 = 126;
+			}
+			val1 += 1;
+		}
+
+		// if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+		// 	miscMotorGroup.move(127);
+		// } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+		// 	miscMotorGroup.move(-127);
+		// } else {
+		// 	miscMotorGroup.move(0);
+		// }
+
+		// delay to not overload the system
 		pros::delay(20);
 	}
+
+			
+		
 }
+
+// 2 3-motor-group controlled by toggle (same ports)
+// 2 3-motor-groups controlled by a joystick (same ports)
+// 1 misc port controller by joystick
+// 1 misc port controller by button
