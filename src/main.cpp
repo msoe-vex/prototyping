@@ -99,18 +99,30 @@ void opcontrol() {
 	pros::Motor_Group motorGroup({motorOne, motorTwo, motorThree, motorOneReversed, motorTwoReversed, motorThreeReversed});
 	pros::Motor_Group miscMotorGroup({miscMotor1, miscMotor2, miscMotor3, miscMotor1Reversed, miscMotor2Reversed, miscMotor3Reversed});
 
-	bool analogUsage1 = true; //Determines joystick or button toggle controls
-	bool analogUsage2 = true; //Determines joystick or button toggle controls
+	bool analogUsage1 = true; //Determines joystick or button toggle controls for motorGroup
+	bool analogUsage2 = true; //Determines joystick or button toggle controls for miscMotorGroup
 
+	/*
+	These variables are for usage in toggling the motors with respect to m_state.
+	toggle1 : enables/disables state-variable motor intensities for motorGroup.
+	toggle2 : enables/disables state-variable motor intensities for miscMotorGroup.
+	val1 : a value used by motorGroup to determine how much power it should output.
+	val2 : a value used by miscMotorGroup to determine how much power it should output.
+	*/
 	bool toggle1 = false;
 	bool toggle2 = false;
 	int val1 = 60;
 	int val2 = 60;
 
+	/*
+	VelocityState has 3 positive(#), a zero(ZERO), and 3 negative(N_#) intensities 
+	and a NONE state to restrict usage.
+	*/
 	enum VelocityState {
         ONE, TWO, THREE, ZERO, N_ONE, N_TWO, N_THREE, NONE
     };
 
+	//m_state uses VelocityState to determine intensity of motor voltage/speed/power.
 	VelocityState m_state = NONE;
 
 	while (true) {
@@ -122,11 +134,12 @@ void opcontrol() {
     	    analogUsage1 = !analogUsage1;
     	}
 
-        if (analogUsage1) { //If analogUsage1 is true, use joystick controls
+        if (analogUsage1) { //If analogUsage1 is true, use joystick controls for motorGroup
 			motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
 		} else {
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-				switch (m_state) {
+				//When pressing L1, process m_state to the next stage up to THREE
+				switch (m_state) { 
 					case ONE: {
 						m_state = TWO;
 					}	
@@ -157,6 +170,7 @@ void opcontrol() {
 				}
 			}
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+				//When pressing L2, process m_state to the next stage down to N_THREE
 				switch (m_state) {
 					case ONE: {
 						m_state = ZERO;
@@ -187,11 +201,14 @@ void opcontrol() {
 					}
 				}
 			}
+			
+			//Enable toggling for motorGroup
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {	
 				toggle1 = !toggle1;
 			}
 
 			if (toggle1) {
+				//move motorGroup based on m_state value
 				switch (m_state) {
 					case ONE: {
 						motorGroup.move(50);
@@ -214,13 +231,14 @@ void opcontrol() {
 					case N_THREE: {
 						motorGroup.move(-127);
 					}
-					case NONE: {
+					case NONE: { /*If state-based toggling isn't denoted (NONE), use val1*/
 						motorGroup.move(val1);
 					}
 				} 
 			} else {
 				motorGroup.move(0);
 			}
+			//when up/Down are pressed, turn state-based toggling off for digital toggling for motorGroup.
 			if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
 				m_state = NONE;
 				if (val1 == -127) {
@@ -235,6 +253,7 @@ void opcontrol() {
 				val1 += 1;
 			}
 			if (toggle1) {
+				//move motorGroup based on m_state value
 				switch (m_state) {
 					case ONE: {
 						motorGroup.move(50);
@@ -263,14 +282,15 @@ void opcontrol() {
 				} 
 			}
 		}
-
+		//Enables/disables miscMotorGroup's analog vs digital input
 		if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
     	    analogUsage2 = !analogUsage2;
     	}
 
-        if (analogUsage2) { //If analogUsage1 is true, use joystick controls
+        if (analogUsage2) { //If analogUsage2 is true, use joystick controls for miscMotorGroup
 			miscMotorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
 		} else {
+			//Enable toggling for miscMotorGroup
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
 				toggle2 = !toggle2;
 			}
@@ -280,7 +300,7 @@ void opcontrol() {
 				miscMotorGroup.move(0);
 			}
 		}
-
+		//The If, else-if chain below manages the motor power of miscMotorGroup.
 		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
 			if (val2 == -127) {
 				val2 = -126;
@@ -292,6 +312,7 @@ void opcontrol() {
 			}
 			val2 += 1;
 		}
+		//The If, else-if chain below manages the motor power of motorGroup.
 		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
 			if (val1 == -127) {
 				val1 = -126;
