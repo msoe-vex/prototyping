@@ -83,18 +83,18 @@ void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 
-	pros::Motor motorOne(1);
-	pros::Motor motorTwo(2);
-	pros::Motor motorThree(3);
-	pros::Motor motorOneReversed(4, true);
-	pros::Motor motorTwoReversed(5, true);
-	pros::Motor motorThreeReversed(6, true);
-	pros::Motor miscMotor1(11);
-	pros::Motor miscMotor2(12);
-	pros::Motor miscMotor3(13);
-	pros::Motor miscMotor1Reversed(14, true);
-	pros::Motor miscMotor2Reversed(15, true);
-	pros::Motor miscMotor3Reversed(16, true);
+	pros::Motor motorOne(1, pros::E_MOTOR_GEARSET_36);
+	pros::Motor motorTwo(2, pros::E_MOTOR_GEARSET_36);
+	pros::Motor motorThree(3, pros::E_MOTOR_GEARSET_36);
+	pros::Motor motorOneReversed(4, pros::E_MOTOR_GEARSET_36, true);
+	pros::Motor motorTwoReversed(5, pros::E_MOTOR_GEARSET_36, true);
+	pros::Motor motorThreeReversed(6, pros::E_MOTOR_GEARSET_36, true);
+	pros::Motor miscMotor1(11, pros::E_MOTOR_GEARSET_36);
+	pros::Motor miscMotor2(12, pros::E_MOTOR_GEARSET_36);
+	pros::Motor miscMotor3(13, pros::E_MOTOR_GEARSET_36);
+	pros::Motor miscMotor1Reversed(14, pros::E_MOTOR_GEARSET_36, true);
+	pros::Motor miscMotor2Reversed(15, pros::E_MOTOR_GEARSET_36, true);
+	pros::Motor miscMotor3Reversed(16, pros::E_MOTOR_GEARSET_36, true);
 	pros::Motor_Group motorGroup({motorOne, motorTwo, motorThree, motorOneReversed, motorTwoReversed, motorThreeReversed});
 	pros::Motor_Group miscMotorGroup({miscMotor1, miscMotor2, miscMotor3, miscMotor1Reversed, miscMotor2Reversed, miscMotor3Reversed});
 
@@ -120,16 +120,16 @@ void opcontrol() {
     	}
 
         if (analogUsage1) { //If analogUsage1 is true, use joystick controls
-			motorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
+			motorGroup.move_velocity(master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
 		} else {
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
 				toggle1 = !toggle1;
 			}
 
 			if (toggle1) {
-				motorGroup.move(val1);
+				motorGroup.move_velocity(val1);
 			} else {
-				motorGroup.move(0);
+				motorGroup.move_velocity(0);
 			}
 		}
 
@@ -138,15 +138,15 @@ void opcontrol() {
     	}
 
         if (analogUsage2) { //If analogUsage2 is true, use joystick controls
-			miscMotorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
+			miscMotorGroup.move_velocity(master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
 		} else {
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
 				toggle2 = !toggle2;
 			}
 			if (toggle2) {
-				miscMotorGroup.move(val2);
+				miscMotorGroup.move_velocity(val2);
 			} else {
-				miscMotorGroup.move(0);
+				miscMotorGroup.move_velocity(0);
 			}
 		}
 
