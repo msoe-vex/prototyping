@@ -80,7 +80,7 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
+	pros::Controller master (pros::E_CONTROLLER_MASTER);
 
 
 	pros::Motor motorOne(1);
