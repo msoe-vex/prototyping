@@ -98,19 +98,23 @@ void opcontrol() {
 	pros::Motor_Group motorGroup({motorOne, motorTwo, motorThree, motorOneReversed, motorTwoReversed, motorThreeReversed});
 	pros::Motor_Group miscMotorGroup({miscMotor1, miscMotor2, miscMotor3, miscMotor1Reversed, miscMotor2Reversed, miscMotor3Reversed});
 
+	// 1 represents left side of controller
+	// 2 represents right side of controller
+
 	bool analogUsage1 = true; //Determines joystick or button toggle controls
 	bool analogUsage2 = true; //Determines joystick or button toggle controls
-
+	
 	bool toggle1 = false;
-	bool toggle2 = false;
-	int val1 = 60;
+	bool toggle2 = false; 
+	int val1 = 60; 
 	int val2 = 60;
 
 	while (true) {
 		//Bad things happening
 		//master.print(0,0, "L: %d R: %d     ", round(motorGroup.get_actual_velocities()[0]), round(miscMotorGroup.get_actual_velocities()[0]));
 		master.print(1,0,"L: %d R: %d     ", val1, val2);
-
+		
+		
     	if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
     	    analogUsage1 = !analogUsage1;
     	}
@@ -133,7 +137,7 @@ void opcontrol() {
     	    analogUsage2 = !analogUsage2;
     	}
 
-        if (analogUsage2) { //If analogUsage1 is true, use joystick controls
+        if (analogUsage2) { //If analogUsage2 is true, use joystick controls
 			miscMotorGroup.move(master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
 		} else {
 			if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
@@ -146,6 +150,7 @@ void opcontrol() {
 			}
 		}
 
+		//Change the value of toggle speeds
 		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
 			if (val2 == -127) {
 				val2 = -126;
