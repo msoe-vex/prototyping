@@ -168,14 +168,16 @@ void opcontrol() {
 			}
 			val1 += 1;
 		}
-
-		// if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-		// 	miscMotorGroup.move(127);
-		// } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
-		// 	miscMotorGroup.move(-127);
-		// } else {
-		// 	miscMotorGroup.move(0);
-		// }
+		
+		/*
+		if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+			miscMotorGroup.move(127);
+		} else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+			miscMotorGroup.move(-127);
+		} else {
+			miscMotorGroup.move(0);
+		}
+		*/
 
 		// delay to not overload the system
 		pros::delay(20);
